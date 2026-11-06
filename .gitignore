@@ -1,0 +1,12 @@
+/build*/
+/data/
+/artifacts/
+.epoch-simulate-*/
+__pycache__/
+.venv/
+.ruff_cache/
+*.pyc
+.env
+.env.*
+!.env.example
+.DS_Store
