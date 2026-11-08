@@ -17,8 +17,23 @@ jobs:
       - run: python3 -m venv .venv
       - run: .venv/bin/python -m pip install -r requirements-dev.txt
       - run: find simulator -type f \( -name '*.cpp' -o -name '*.hpp' \) -exec .venv/bin/clang-format --dry-run --Werror {} +
-      - run: .venv/bin/ruff check simulator/tests
-      - run: .venv/bin/ruff format --check simulator/tests
+      - run: .venv/bin/ruff check simulator/tests ml
+      - run: .venv/bin/ruff format --check simulator/tests ml
+
+  python-tests:
+    name: PyTorch tests and simulator-to-model smoke
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - run: python3 -m venv "$RUNNER_TEMP/uv-tool"
+      - run: '"$RUNNER_TEMP/uv-tool/bin/python" -m pip install uv==0.7.13'
+      - run: '"$RUNNER_TEMP/uv-tool/bin/uv" sync --locked --python 3.12'
+      - run: .venv/bin/python -m unittest discover -s ml/tests -v
+      - run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+      - run: cmake --build build --parallel 2
+      - run: ./build/epoch-simulate --output "$RUNNER_TEMP/epoch-smoke.csv" --sessions 60 --users 6 --reviews 8 --seed 42
+      - run: .venv/bin/python -m ml.train --data "$RUNNER_TEMP/epoch-smoke.csv" --output "$RUNNER_TEMP/epoch-smoke-run" --epochs 3
 
   native-tests:
     name: C++ / ${{ matrix.compiler }} / ${{ matrix.build_type }}

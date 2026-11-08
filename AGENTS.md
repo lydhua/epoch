@@ -12,14 +12,15 @@ type. Model collections, learning items, and attempts independently of front/bac
 card fields. Broad applicability is a design goal, not proof that one outcome
 definition or trained model works equally well for every kind of learning.
 
-This repository has a C++ simulator, tests, and CI configuration. The model,
-application, frontend, and deployment are still planned. Do not assume planned
+This repository has a C++ simulator and a CPU PyTorch experiment pipeline, tests,
+and CI configuration. The application, production scheduler, frontend, and
+deployment are still planned. Do not assume planned
 directories or services exist. Keep implemented behavior clearly separated from
 proposals in both code and documentation.
 
 Favor readable design, meaningful automated tests, reproducible measurements, and
 a usable deployed slice over extra services.
-Read `docs/experiment-v1.md` and `docs/product-v1.md` for the current contracts.
+Read `docs/experiment-v1.md`, `docs/ml-v1.md`, and `docs/product-v1.md` for the contracts.
 
 ## Architecture boundaries
 
@@ -28,12 +29,20 @@ Read `docs/experiment-v1.md` and `docs/product-v1.md` for the current contracts.
 - Use Python and PyTorch for recall modeling, feature generation, training, and
   evaluation. Initially keep inference in Python, not a second native ML runtime.
 - Include a C++ simulation pipeline targeting 500,000 synthetic learning sessions
-  with individualized forgetting curves, feeding a future PyTorch recall model.
-  The generator exists; training is not implemented yet. Keep generation
+  with individualized forgetting curves, feeding a PyTorch recall model.
+  The initial generator and training pipeline exist, not a validated scheduling
+  policy. Keep generation
   configurable and reproducible; distinguish sessions from individual review events.
 - Use FastAPI and PostgreSQL for the service and persistent data, with a
   TypeScript/React web client. These are starting choices, not existing scaffolds.
 - Keep scheduling policy, model scoring, and data access separately testable.
+- ML uses Python 3.12 and `uv.lock`; run `uv sync --locked` and
+  `uv run --frozen python -m unittest discover -s ml/tests -v`. Keep native-only
+  development pins in `requirements-dev.txt` aligned with the project dev group.
+- ML input features are explicitly allowlisted and versioned. Keep all cold-test
+  users out of training and vocabulary fitting. Maintain the history-only ablation.
+- Save versioned JSON model weights, not pickle; validate shapes, schema, and the
+  zero unknown-user effect on load. Never overwrite an existing experiment run.
 - Preserve optional measured and corrected timing separately, including pause/
   resume semantics. Do not depend on accessing LeetCode's timer. Learned items
   remain eligible for maintenance reviews; user overrides are not success labels.

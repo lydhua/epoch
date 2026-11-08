@@ -13,8 +13,9 @@ distinction is support for coding/general practice, timing-aware outcomes, and
 activity-specific learning goals—not a claim that existing tools lack ML.
 
 **Status:** early implementation. A C++20 synthetic-session generator, native and
-CLI integration tests, and GitHub Actions CI configuration are present. The
-PyTorch model, application, frontend, and deployment are not implemented yet.
+CLI integration tests, and a CPU PyTorch training/evaluation pipeline are present.
+The application, production scheduler, frontend, and deployment are not implemented
+yet.
 See [GitHub Actions](https://github.com/lydhua/epoch/actions/workflows/ci.yml) for
 CI results, plus the
 [experiment specification](docs/experiment-v1.md) and
@@ -51,7 +52,7 @@ options. Compatibility with Anki's scheduling or collection format is not implie
 The original project concept paired a **C++ simulator generating 500,000 synthetic
 learning sessions with individualized forgetting curves** with a **PyTorch neural
 network trained to predict recall probability from simulated session histories**.
-The simulator is now implemented; the PyTorch training stage is next. The planned
+The simulator and first PyTorch training stage are now implemented. The planned
 500,000-session scale is supported by the CLI but is not a claimed completed
 training experiment.
 
@@ -257,8 +258,36 @@ ruff check simulator/tests
 ruff format --check simulator/tests
 ```
 
+### PyTorch experiment
+
+ML uses **Python 3.12**, with PyTorch, NumPy, and development dependencies pinned
+in `pyproject.toml` and resolved in `uv.lock`. Install
+[uv](https://docs.astral.sh/uv/getting-started/installation/) (`0.7.13` is used in
+CI), then from the repository root:
+
+```sh
+uv sync --locked
+uv run --frozen python -m unittest discover -s ml/tests -v
+uv run --frozen python -m ml.train --data data/sessions.csv --output artifacts/run-001 --epochs 50
+uv run --frozen ruff check simulator/tests ml
+uv run --frozen ruff format --check simulator/tests ml
+```
+
+Generate `data/sessions.csv` with the earlier C++ command first. Each experiment
+needs a fresh output directory. It produces `model.json` (versioned JSON weights,
+not pickle) and `report.json` with baseline comparisons, calibration, dataset/model
+hashes, configuration, environment, and source provenance. See
+[ML experiment details](docs/ml-v1.md) for inference, splits, and limitations.
+
+The first loader is bounded and in-memory: **200,000 rows by default**, not the
+four-million-row scale target. The neural model is compared against a constant,
+a fitted shared forgetting curve, and a history-only neural ablation. All results
+are synthetic; learned scheduling is not enabled in an application.
+
 CI configuration runs formatting/lint checks, GCC/Clang Debug/Release builds,
-unit/CLI tests, and a separate sanitizer job. CD will be added with the first
+unit/CLI tests, a separate sanitizer job, and Python tests plus a small C++-to-ML
+smoke experiment. Expensive training is not part of ordinary PR checks.
+CD will be added with the first
 deployable service, including staging smoke tests, production approval, and
 rollback—not a placeholder deploy.
 See [AGENTS.md](AGENTS.md) for implementation guidance and project constraints.

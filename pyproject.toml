@@ -1,6 +1,30 @@
+[project]
+name = "epoch-study"
+version = "0.1.0"
+requires-python = ">=3.12,<3.13"
+dependencies = ["torch==2.15.0", "numpy==2.3.3"]
+
+[dependency-groups]
+# Keep aligned with requirements-dev.txt for standalone native development.
+dev = ["cmake==3.31.6", "clang-format==19.1.7", "ruff==0.11.13"]
+
+[tool.uv]
+package = false
+
+[tool.uv.sources]
+torch = [{ index = "pytorch-cpu", marker = "sys_platform == 'linux'" }]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
 [tool.ruff]
 target-version = "py39"
 line-length = 100
+
+[tool.ruff.per-file-target-version]
+"ml/**/*.py" = "py312"
 
 [tool.ruff.lint]
 select = ["E", "F", "I"]
