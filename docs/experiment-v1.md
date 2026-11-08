@@ -49,7 +49,11 @@ file at the final path. Forced termination can leave a hidden `.epoch-simulate-*
 staging directory, ignored by Git, but cannot publish a partial final file. This
 is atomic visibility, not a promise of power-loss durability (no `fsync`).
 
-## Training and evaluation contract (next)
+## Training and evaluation contract
+
+The first implementation is described in [ML v1](ml-v1.md). It uses log-transformed
+pre-attempt review/success/failure counts, elapsed days through the decay equation,
+and an optional learned user effect. Diagnostic fields and solve time are excluded.
 
 - Target: current row's `success`.
 - Allowlisted initial features: `elapsed_days`, `review_index`, `prior_successes`,
@@ -72,9 +76,11 @@ is atomic visibility, not a promise of power-loss durability (no `fsync`).
 
 ## Engineering milestones
 
-Current slice: dependency-free C++ library/CLI, tests, and CI configuration.
-Next: reproducible PyTorch training/evaluation, then a persistent API and thin web
-client. A C++ scheduler/pybind11 layer is deferred until a demonstrated need.
+Current slice: C++ library/CLI plus reproducible CPU PyTorch training/evaluation,
+tests, and CI configuration. Next: assess multiple seeds/distribution shift, then
+a persistent API and thin web client. A native scheduler/pybind11 layer is deferred
+until a demonstrated need. Out-of-core ingestion and the four-million-row training
+target are not implemented; the initial loader defaults to a 200,000-row cap.
 CI must test each introduced component. CD follows a deployable service: build an
 immutable image, test it, deploy to staging, smoke-test, require approval for
 production, and document rollback. No fake deploy job or unverified green badge.
