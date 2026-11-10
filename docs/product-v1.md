@@ -1,6 +1,9 @@
 # Product v1: coding practice on a general learning model
 
-These are requirements, not implemented features. Favor a usable vertical slice,
+These are product requirements. The [practice contracts and baseline scheduler](practice-v1.md)
+are implemented as a library. A [FastAPI/PostgreSQL adapter](api-v1.md) implements
+the first persistent practice loop; the timer UI and deployment are not implemented.
+Favor a usable vertical slice,
 readable boundaries, meaningful tests, measured performance, and reproducible
 deployment over extra services.
 

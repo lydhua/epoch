@@ -134,4 +134,6 @@ just a weak constant baseline; cold-user gains are not guaranteed.
 Next evaluate multiple seeds, shifted learner populations, changed learning/decay
 assumptions, and learning curves versus history size. Only then consider real,
 consented practice data and prospective scheduling evaluation. Production fallback,
-maintenance policy, timer UI, API, and deployment are not implemented here.
+model-assisted maintenance policy, and deployment are not implemented here.
+The separate [baseline/API adapter](api-v1.md) now provides the initial persistent
+practice loop; its frontend and timer UI remain future work.

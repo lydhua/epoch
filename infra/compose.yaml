@@ -1,0 +1,19 @@
+services:
+  db:
+    image: postgres:17.10@sha256:7958605b474b3d264a969cb3a123d6aa00ad1e1fe9da8a69984dabb704d93317
+    environment:
+      POSTGRES_DB: epoch_dev
+      POSTGRES_USER: epoch
+      POSTGRES_PASSWORD: ${EPOCH_POSTGRES_PASSWORD:?Set EPOCH_POSTGRES_PASSWORD}
+    ports:
+      - "127.0.0.1:${EPOCH_POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - epoch-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U epoch -d epoch_dev"]
+      interval: 2s
+      timeout: 5s
+      retries: 15
+
+volumes:
+  epoch-postgres:
