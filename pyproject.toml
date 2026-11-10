@@ -4,9 +4,20 @@ version = "0.1.0"
 requires-python = ">=3.12,<3.13"
 dependencies = ["torch==2.15.0", "numpy==2.3.3"]
 
+[project.optional-dependencies]
+api = [
+    "fastapi==0.162.2",
+    "sqlalchemy==2.1.8",
+    "alembic==1.20.1",
+    "psycopg[binary]==3.3.8",
+    "PyJWT==2.15.1",
+    "uvicorn==0.54.0",
+]
+
 [dependency-groups]
 # Keep aligned with requirements-dev.txt for standalone native development.
 dev = ["cmake==3.31.6", "clang-format==19.1.7", "ruff==0.11.13"]
+api-test = ["httpx2==2.16.0"]
 
 [tool.uv]
 package = false
@@ -25,6 +36,8 @@ line-length = 100
 
 [tool.ruff.per-file-target-version]
 "ml/**/*.py" = "py312"
+"practice/**/*.py" = "py312"
+"api/**/*.py" = "py312"
 
 [tool.ruff.lint]
 select = ["E", "F", "I"]
