@@ -12,15 +12,20 @@ type. Model collections, learning items, and attempts independently of front/bac
 card fields. Broad applicability is a design goal, not proof that one outcome
 definition or trained model works equally well for every kind of learning.
 
-This repository has a C++ simulator and a CPU PyTorch experiment pipeline, tests,
-and CI configuration. The application, production scheduler, frontend, and
-deployment are still planned. Do not assume planned
+This repository has a C++ simulator, CPU PyTorch experiment pipeline, and pure
+practice-domain contracts/baseline scheduler, with tests and CI configuration.
+The FastAPI/PostgreSQL adapter implements the basic practice loop with migrations
+and transactional attempt receipts. The frontend, full account lifecycle, and
+deployment are still planned.
+Do not assume planned
 directories or services exist. Keep implemented behavior clearly separated from
 proposals in both code and documentation.
 
 Favor readable design, meaningful automated tests, reproducible measurements, and
 a usable deployed slice over extra services.
 Read `docs/experiment-v1.md`, `docs/ml-v1.md`, and `docs/product-v1.md` for the contracts.
+Read `docs/practice-v1.md` before changing practice records or baseline policy.
+Read `docs/api-v1.md` before changing authentication, storage, or endpoints.
 
 ## Architecture boundaries
 
@@ -34,8 +39,27 @@ Read `docs/experiment-v1.md`, `docs/ml-v1.md`, and `docs/product-v1.md` for the 
   policy. Keep generation
   configurable and reproducible; distinguish sessions from individual review events.
 - Use FastAPI and PostgreSQL for the service and persistent data, with a
-  TypeScript/React web client. These are starting choices, not existing scaffolds.
+  TypeScript/React web client. The client is not implemented yet.
 - Keep scheduling policy, model scoring, and data access separately testable.
+- Install API extras with `uv sync --locked --extra api --group api-test`.
+  Run `.venv/bin/python -m unittest discover -s api/tests -v`; real PostgreSQL
+  integration tests require `EPOCH_TEST_DATABASE_URL` naming an `epoch_test*`
+  database. Do not substitute SQLite for row-lock/idempotency tests.
+- Apply explicit Alembic migrations; never create tables at API startup. Preserve
+  historical migration definitions rather than importing mutable application schema.
+- Derive ownership from verified token claims, never request-body owner fields.
+  The local JWT helper is not a production signup/login system; do not deploy
+  publicly without the remaining auth and operational controls.
+- Keep item locking, attempt insertion, receipt persistence, and current schedule
+  updates in one transaction. Retries return their original receipt without
+  replacing a newer current schedule. Attempt APIs are append-only.
+- Keep `practice/` independent of PyTorch, HTTP, databases, and wall-clock reads.
+  Use injected UTC-aware time and immutable attempts; reject conflicting retries.
+- Baseline intervals and mastery labels are pilot heuristics, not research-proven
+  defaults. Preserve the policy version and exact configuration fingerprint.
+- Run `uv run --frozen python -m unittest discover -s practice/tests -v` for the
+  practice suite. Domain replay does not replace database transactions, unique
+  event constraints, or authorization in the API.
 - ML uses Python 3.12 and `uv.lock`; run `uv sync --locked` and
   `uv run --frozen python -m unittest discover -s ml/tests -v`. Keep native-only
   development pins in `requirements-dev.txt` aligned with the project dev group.

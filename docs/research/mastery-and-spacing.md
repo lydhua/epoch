@@ -87,7 +87,12 @@ forgetting-curve baseline and evaluate an FSRS comparator once an explicit,
 documented mapping of coding outcomes to its ratings exists. Do not present
 "uses ML" or a neural network as evidence of novelty or better scheduling.
 
-## Recommended pilot policy (proposal, not implemented)
+## Recommended pilot policy
+
+The [baseline prototype](../practice-v1.md) now implements a configurable version
+of the learning/consolidation/maintenance workflow below. It is a product heuristic,
+not validation of these thresholds or of real-world learning gains. Learned
+scheduling and prospective comparisons remain future work.
 
 1. **Learning:** no independent success demonstrated yet.
 2. **Consolidating:** an independent solve has occurred, but evidence of delayed

@@ -14,8 +14,10 @@ activity-specific learning goals—not a claim that existing tools lack ML.
 
 **Status:** early implementation. A C++20 synthetic-session generator, native and
 CLI integration tests, and a CPU PyTorch training/evaluation pipeline are present.
-The application, production scheduler, frontend, and deployment are not implemented
-yet.
+An experimental practice-domain library and configurable baseline scheduler are
+also present, with a FastAPI/PostgreSQL adapter for the basic practice loop.
+The React frontend, account signup/login, and deployment are not implemented yet.
+See [practice contracts](docs/practice-v1.md) and [local API setup](docs/api-v1.md).
 See [GitHub Actions](https://github.com/lydhua/epoch/actions/workflows/ci.yml) for
 CI results, plus the
 [experiment specification](docs/experiment-v1.md) and
@@ -162,6 +164,7 @@ These directories will be introduced as their components are implemented:
 ```text
 simulator/      C++ synthetic session generator and simulation tests
 ml/             PyTorch models, features, training, and evaluation
+practice/       Pure learning-item/attempt contracts and baseline scheduling
 api/            FastAPI application, migrations, and integration tests
 web/            React study interface
 infra/          Container definitions and deployment configuration
@@ -258,6 +261,40 @@ ruff check simulator/tests
 ruff format --check simulator/tests
 ```
 
+### Practice contracts and baseline scheduler
+
+`practice/` is a pure Python 3.12 library: immutable collections/items/attempts,
+optional measured/corrected timing, owner checks, and deterministic baseline
+scheduling. It does not import PyTorch or access a database. After the environment
+setup below:
+
+```sh
+uv run --frozen python -m unittest discover -s practice/tests -v
+```
+
+The provisional policy distinguishes independent success from assisted attempts,
+requires delayed evidence before maintenance, and retains finite maintenance
+reviews. Early repeats do not inflate maintenance intervals. Time goals and
+confidence are recorded separately from the scheduling policy. See
+[the contract, defaults, and example](docs/practice-v1.md).
+
+### Local API and PostgreSQL
+
+```sh
+uv sync --locked --extra api --group api-test
+```
+
+The API supports collections, typed learning items, due queues, and idempotent
+attempt submission with transactional scheduling updates. It uses verified bearer
+tokens and owner-scoped queries; it has no default secret or anonymous data access.
+The local token helper is not a production login system.
+
+[API setup and examples](docs/api-v1.md) cover PostgreSQL, explicit Alembic
+migrations, local tokens, and `.venv/bin/uvicorn api.app:create_app --factory`.
+Once running locally, `http://127.0.0.1:8000/docs` provides interactive API docs,
+not a study frontend. The next UI slice will use these endpoints for the due queue,
+problem links, optional timer, and outcome entry.
+
 ### PyTorch experiment
 
 ML uses **Python 3.12**, with PyTorch, NumPy, and development dependencies pinned
@@ -269,8 +306,8 @@ CI), then from the repository root:
 uv sync --locked
 uv run --frozen python -m unittest discover -s ml/tests -v
 uv run --frozen python -m ml.train --data data/sessions.csv --output artifacts/run-001 --epochs 50
-uv run --frozen ruff check simulator/tests ml
-uv run --frozen ruff format --check simulator/tests ml
+uv run --frozen ruff check simulator/tests ml practice api
+uv run --frozen ruff format --check simulator/tests ml practice api
 ```
 
 Generate `data/sessions.csv` with the earlier C++ command first. Each experiment
@@ -285,7 +322,8 @@ a fitted shared forgetting curve, and a history-only neural ablation. All result
 are synthetic; learned scheduling is not enabled in an application.
 
 CI configuration runs formatting/lint checks, GCC/Clang Debug/Release builds,
-unit/CLI tests, a separate sanitizer job, and Python tests plus a small C++-to-ML
+unit/CLI tests, a separate sanitizer job, standalone practice-domain tests,
+PostgreSQL-backed API tests, and Python ML tests plus a small C++-to-ML
 smoke experiment. Expensive training is not part of ordinary PR checks.
 CD will be added with the first
 deployable service, including staging smoke tests, production approval, and

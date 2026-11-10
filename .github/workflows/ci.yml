@@ -17,8 +17,41 @@ jobs:
       - run: python3 -m venv .venv
       - run: .venv/bin/python -m pip install -r requirements-dev.txt
       - run: find simulator -type f \( -name '*.cpp' -o -name '*.hpp' \) -exec .venv/bin/clang-format --dry-run --Werror {} +
-      - run: .venv/bin/ruff check simulator/tests ml
-      - run: .venv/bin/ruff format --check simulator/tests ml
+      - run: .venv/bin/ruff check simulator/tests ml practice api
+      - run: .venv/bin/ruff format --check simulator/tests ml practice api
+
+  api-tests:
+    name: API and PostgreSQL integration
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:17.10@sha256:7958605b474b3d264a969cb3a123d6aa00ad1e1fe9da8a69984dabb704d93317
+        env:
+          POSTGRES_USER: epoch
+          POSTGRES_PASSWORD: epoch-ci-only
+          POSTGRES_DB: epoch_test_api
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U epoch -d epoch_test_api"
+          --health-interval 2s --health-timeout 5s --health-retries 20
+    env:
+      EPOCH_TEST_DATABASE_URL: postgresql+psycopg://epoch:epoch-ci-only@localhost:5432/epoch_test_api
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - run: python3 -m venv "$RUNNER_TEMP/uv-tool"
+      - run: '"$RUNNER_TEMP/uv-tool/bin/python" -m pip install uv==0.7.13'
+      - run: '"$RUNNER_TEMP/uv-tool/bin/uv" sync --locked --python 3.12 --extra api --group api-test'
+      - run: .venv/bin/python -m unittest discover -s api/tests -v
+
+  practice-tests:
+    name: Practice contracts and baseline scheduler
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - run: python3 -m unittest discover -s practice/tests -v
 
   python-tests:
     name: PyTorch tests and simulator-to-model smoke
