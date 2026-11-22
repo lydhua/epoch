@@ -88,8 +88,8 @@ export EPOCH_POSTGRES_PASSWORD="$(.venv/bin/python -c 'import secrets; print(sec
 export EPOCH_JWT_SECRET="$(.venv/bin/python -c 'import secrets; print(secrets.token_urlsafe(48))')"
 export EPOCH_DATABASE_URL="postgresql+psycopg://epoch:${EPOCH_POSTGRES_PASSWORD}@localhost:5432/epoch_dev"
 docker compose -f infra/compose.yaml up -d --wait db
-.venv/bin/alembic -c api/alembic.ini upgrade head
-.venv/bin/uvicorn api.app:create_app --factory --host 127.0.0.1 --port 8000
+.venv/bin/python -m alembic -c api/alembic.ini upgrade head
+.venv/bin/python -m uvicorn api.app:create_app --factory --host 127.0.0.1 --port 8000
 ```
 
 The image is pinned to PostgreSQL 17.10 and a verified digest. PostgreSQL binds

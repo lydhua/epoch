@@ -291,7 +291,7 @@ tokens and owner-scoped queries; it has no default secret or anonymous data acce
 The local token helper is not a production login system.
 
 [API setup and examples](docs/api-v1.md) cover PostgreSQL, explicit Alembic
-migrations, local tokens, and `.venv/bin/uvicorn api.app:create_app --factory`.
+migrations, local tokens, and `.venv/bin/python -m uvicorn api.app:create_app --factory`.
 Once running locally, `http://127.0.0.1:8000/docs` provides interactive API docs,
 not the study frontend. The React client uses these endpoints for its practice workflow.
 
