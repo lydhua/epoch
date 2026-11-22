@@ -53,6 +53,53 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - run: python3 -m unittest discover -s practice/tests -v
 
+  web-tests:
+    name: Web build and browser workflows
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:17.10@sha256:7958605b474b3d264a969cb3a123d6aa00ad1e1fe9da8a69984dabb704d93317
+        env:
+          POSTGRES_USER: epoch
+          POSTGRES_PASSWORD: epoch-ci-only
+          POSTGRES_DB: epoch_test_web
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U epoch -d epoch_test_web"
+          --health-interval 2s --health-timeout 5s --health-retries 20
+    env:
+      EPOCH_DATABASE_URL: postgresql+psycopg://epoch:epoch-ci-only@localhost:5432/epoch_test_web
+      EPOCH_JWT_SECRET: synthetic-web-ci-secret-not-for-production
+      EPOCH_DEV_TOKENS: '1'
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version-file: web/.node-version
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+        working-directory: web
+      - run: npm run format:check && npm run build
+        working-directory: web
+      - run: npx playwright install --with-deps chromium
+        working-directory: web
+      - run: python3 -m venv "$RUNNER_TEMP/uv-tool"
+      - run: '"$RUNNER_TEMP/uv-tool/bin/python" -m pip install uv==0.7.13'
+      - run: '"$RUNNER_TEMP/uv-tool/bin/uv" sync --locked --python 3.12 --extra api'
+      - run: .venv/bin/alembic -c api/alembic.ini upgrade head
+      - name: Start local API and issue synthetic test token
+        run: |
+          .venv/bin/uvicorn api.app:create_app --factory --host 127.0.0.1 --port 8000 > "$RUNNER_TEMP/epoch-web-api.log" 2>&1 &
+          token="$(.venv/bin/python -m api.dev_token --user 11111111-1111-4111-8111-111111111111)"
+          echo "::add-mask::$token"
+          echo "EPOCH_E2E_TOKEN=$token" >> "$GITHUB_ENV"
+          curl --fail --retry 10 --retry-connrefused --retry-delay 1 http://127.0.0.1:8000/readyz
+      - run: npm test
+        working-directory: web
+
   python-tests:
     name: PyTorch tests and simulator-to-model smoke
     runs-on: ubuntu-24.04
