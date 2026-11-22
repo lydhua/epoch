@@ -78,8 +78,8 @@ and an optional learned user effect. Diagnostic fields and solve time are exclud
 
 Current slice: C++ library/CLI plus reproducible CPU PyTorch training/evaluation,
 tests, and CI configuration. A separate baseline scheduler and PostgreSQL API now
-provide the first persistent practice loop. Next: a thin web client and further
-multi-seed/distribution-shift evaluation. A native scheduler/pybind11 layer is deferred
+provide the first persistent practice loop, with a local React client. Further
+multi-seed/distribution-shift evaluation remains planned. A native scheduler/pybind11 layer is deferred
 until a demonstrated need. Out-of-core ingestion and the four-million-row training
 target are not implemented; the initial loader defaults to a 200,000-row cap.
 CI must test each introduced component. CD follows a deployable service: build an

@@ -157,5 +157,6 @@ Save the decision's policy version and exact configuration fingerprint alongside
 its proposal, applied override, and explanation. A model-assisted policy can later
 share the same decision boundary and use this policy as fallback; no model is
 enabled for live scheduling here. The adapter has token verification, persistence,
-and basic endpoints; full account lifecycle, due-queue UI, timer controls,
-deployment, and real-world effectiveness remain unimplemented.
+and basic endpoints. The [local frontend](web-v1.md) implements the due queue and
+timer controls; full account lifecycle, deployment, and real-world effectiveness
+remain unimplemented.

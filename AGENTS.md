@@ -15,8 +15,8 @@ definition or trained model works equally well for every kind of learning.
 This repository has a C++ simulator, CPU PyTorch experiment pipeline, and pure
 practice-domain contracts/baseline scheduler, with tests and CI configuration.
 The FastAPI/PostgreSQL adapter implements the basic practice loop with migrations
-and transactional attempt receipts. The frontend, full account lifecycle, and
-deployment are still planned.
+and transactional attempt receipts. The React frontend implements the local practice
+workflow and optional timer. Full account lifecycle and deployment are still planned.
 Do not assume planned
 directories or services exist. Keep implemented behavior clearly separated from
 proposals in both code and documentation.
@@ -26,6 +26,7 @@ a usable deployed slice over extra services.
 Read `docs/experiment-v1.md`, `docs/ml-v1.md`, and `docs/product-v1.md` for the contracts.
 Read `docs/practice-v1.md` before changing practice records or baseline policy.
 Read `docs/api-v1.md` before changing authentication, storage, or endpoints.
+Read `docs/web-v1.md` before changing frontend authentication, timer, or retry behavior.
 
 ## Architecture boundaries
 
@@ -39,7 +40,14 @@ Read `docs/api-v1.md` before changing authentication, storage, or endpoints.
   policy. Keep generation
   configurable and reproducible; distinguish sessions from individual review events.
 - Use FastAPI and PostgreSQL for the service and persistent data, with a
-  TypeScript/React web client. The client is not implemented yet.
+  TypeScript/React/Vite web client in `web/`.
+- Web uses Node 24.22.2 and `web/package-lock.json`. Run `npm ci`,
+  `npm run format:check`, `npm run build`, and `npm test` inside `web/`.
+  Install Chromium with `npx playwright install chromium` first. The live browser
+  test needs `EPOCH_E2E_TOKEN` for a disposable synthetic user and a running API.
+- Preserve timer drafts and frozen retry payloads across refreshes. Keep tokens
+  out of URLs, built assets, and localStorage; local preview uses sessionStorage.
+  The explicit Vite demo-token middleware must stay development-only.
 - Keep scheduling policy, model scoring, and data access separately testable.
 - Install API extras with `uv sync --locked --extra api --group api-test`.
   Run `.venv/bin/python -m unittest discover -s api/tests -v`; real PostgreSQL

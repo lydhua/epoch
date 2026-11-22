@@ -136,4 +136,4 @@ assumptions, and learning curves versus history size. Only then consider real,
 consented practice data and prospective scheduling evaluation. Production fallback,
 model-assisted maintenance policy, and deployment are not implemented here.
 The separate [baseline/API adapter](api-v1.md) now provides the initial persistent
-practice loop; its frontend and timer UI remain future work.
+practice loop; the [local frontend](web-v1.md) adds the timer and study UI.

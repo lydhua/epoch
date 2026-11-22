@@ -2,7 +2,8 @@
 
 This is a local-development FastAPI/PostgreSQL adapter around `practice/`. It
 implements a minimal real study-data loop, not a publicly deployed service. The
-frontend is the next product slice; `/docs` is interactive API documentation only.
+local [frontend](web-v1.md) now consumes these endpoints; `/docs` is interactive
+API documentation only.
 The API never imports PyTorch or runs training/inference in a request.
 
 ## Implemented endpoints
@@ -162,10 +163,10 @@ PostgreSQL 16.2 server over a private Unix socket because Docker is unavailable 
 this machine. The Compose configuration has not been run locally. Consult GitHub
 Actions for remote results. No local server is left running after tests.
 
-## Next: the frontend
+## Frontend integration
 
-The next slice can now add a React due queue, create-problem form, external problem
-links, optional start/pause/resume/reset/edit timer, and outcome submission. Keep a
+The [React client](web-v1.md) implements a due queue, create-problem form, external
+problem links, optional start/pause/resume/reset/edit timer, and outcome submission. Keep a
 pending attempt UUID/payload stable for retries and refresh the item's current
 schedule after submitting. Start with local development authentication; the actual
 production login UX depends on the identity-provider decision. A polished UI does

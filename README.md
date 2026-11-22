@@ -16,7 +16,8 @@ activity-specific learning goals—not a claim that existing tools lack ML.
 CLI integration tests, and a CPU PyTorch training/evaluation pipeline are present.
 An experimental practice-domain library and configurable baseline scheduler are
 also present, with a FastAPI/PostgreSQL adapter for the basic practice loop.
-The React frontend, account signup/login, and deployment are not implemented yet.
+The React frontend now implements the local practice workflow and optional timer.
+Account signup/login and deployment are not implemented yet.
 See [practice contracts](docs/practice-v1.md) and [local API setup](docs/api-v1.md).
 See [GitHub Actions](https://github.com/lydhua/epoch/actions/workflows/ci.yml) for
 CI results, plus the
@@ -157,9 +158,9 @@ success, timing, and user feedback only through an explicit, evaluated policy.
 - Use synthetic data to test the pipeline, not as evidence of real learning gains.
 - Begin with shadow predictions, then consider an opt-in controlled comparison.
 
-## Planned repository layout
+## Repository layout
 
-These directories will be introduced as their components are implemented:
+Implemented components and their responsibilities:
 
 ```text
 simulator/      C++ synthetic session generator and simulation tests
@@ -167,7 +168,7 @@ ml/             PyTorch models, features, training, and evaluation
 practice/       Pure learning-item/attempt contracts and baseline scheduling
 api/            FastAPI application, migrations, and integration tests
 web/            React study interface
-infra/          Container definitions and deployment configuration
+infra/          Local PostgreSQL Compose configuration
 docs/           Design decisions, event schemas, and operational notes
 ```
 
@@ -292,8 +293,22 @@ The local token helper is not a production login system.
 [API setup and examples](docs/api-v1.md) cover PostgreSQL, explicit Alembic
 migrations, local tokens, and `.venv/bin/uvicorn api.app:create_app --factory`.
 Once running locally, `http://127.0.0.1:8000/docs` provides interactive API docs,
-not a study frontend. The next UI slice will use these endpoints for the due queue,
-problem links, optional timer, and outcome entry.
+not the study frontend. The React client uses these endpoints for its practice workflow.
+
+### Local web interface
+
+With the API running, install Node 24.22.2, then:
+
+```sh
+cd web
+npm ci
+npm run dev
+```
+
+Open `http://127.0.0.1:5173` and connect using a local development token. The client
+includes collections, due practice, problem entry, an optional recoverable timer,
+and attempt history. See [web setup and behavior](docs/web-v1.md) for local demo
+authentication, tests, retry handling, and current limitations.
 
 ### PyTorch experiment
 
@@ -323,8 +338,9 @@ are synthetic; learned scheduling is not enabled in an application.
 
 CI configuration runs formatting/lint checks, GCC/Clang Debug/Release builds,
 unit/CLI tests, a separate sanitizer job, standalone practice-domain tests,
-PostgreSQL-backed API tests, and Python ML tests plus a small C++-to-ML
-smoke experiment. Expensive training is not part of ordinary PR checks.
+PostgreSQL-backed API tests, Python ML tests plus a small C++-to-ML smoke experiment,
+and web build/browser tests including a real API practice flow. Expensive training
+is not part of ordinary PR checks.
 CD will be added with the first
 deployable service, including staging smoke tests, production approval, and
 rollback—not a placeholder deploy.

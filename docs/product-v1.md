@@ -2,7 +2,8 @@
 
 These are product requirements. The [practice contracts and baseline scheduler](practice-v1.md)
 are implemented as a library. A [FastAPI/PostgreSQL adapter](api-v1.md) implements
-the first persistent practice loop; the timer UI and deployment are not implemented.
+the first persistent practice loop. The [local web client](web-v1.md) implements
+the queue, problem entry, timer, and attempt workflow. Deployment remains planned.
 Favor a usable vertical slice,
 readable boundaries, meaningful tests, measured performance, and reproducible
 deployment over extra services.
@@ -19,6 +20,16 @@ solution, or not solved. Capture self-assessed confidence separately; absence of
 a rating is not failure. Timing is optional: missing time must not mean zero or
 automatically worsen the success label. Previous attempt times may inform future
 predictions, but current solve time is only known after the attempt.
+
+## Study interface
+
+The Today page prioritizes one next review, followed by difficulty-filterable
+alternatives. It displays the last attempt's outcome/duration/date and a personal
+time goal without using speed to relabel success or change baseline scheduling.
+Titles link to the external problem; adding a problem is URL-first. A secondary
+Epoch activity calendar counts first attempts and repetitions, not saved links.
+Use factual labels, light/dark/system themes, and minimal decoration. Automatic
+LeetCode synchronization and personal profile/statistics pages remain deferred.
 
 ## Optional timer
 
@@ -68,7 +79,7 @@ not an established default for long coding problems.
 ## Delivery quality
 
 - CI: compiler/build matrix, warnings as errors, unit tests, CLI/schema integration
-  tests, and sanitizer checks; later add Python, API, and frontend test suites.
+  tests, sanitizer checks, Python/API suites, and frontend browser workflows.
 - Product tests: authorization/ownership, idempotency, maintenance scheduling,
   timer transitions, and full attempt-to-next-due flows.
 - CD: automated staging deployment and smoke tests once there is a service,
